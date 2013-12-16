@@ -22,6 +22,7 @@ If no requirements file is specified, the script will look for a a file called
 Example output
 --------------
 
+```
 ipython
     0.13.1 is required by local requirements
     1.1.0 is required by jira-python 0.12
@@ -38,4 +39,5 @@ requests
 iso8601
     0.1.4 is required by kaiso 0.13.3
     0.1.8 is required by nameko 1.1.2, local requirements
+```
 
