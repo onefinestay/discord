@@ -14,7 +14,9 @@ Usage
 Discord scans a requirements file and checks out and inspects all packages
 required by this file and all subpackages recursively.
 
-$ python -m discord \<requirements_file\>
+```bash
+$ python -m discord <requirements_file>
+```
 
 If no requirements file is specified, the script will look for a a file called
 `requirements.txt` in the current directory.
