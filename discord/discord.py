@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class Requirement(object):
+    """ A requirement holds a package specification, such as "requests==2.1.0".
+    """
 
     def __init__(self, req):
         self.req = req.strip()
@@ -33,6 +35,9 @@ class Requirement(object):
         return hash(self.req)
 
     def resolve(self, lookup, parent=None):
+        """ Resolve this requirement and return a Package object along with
+        that package's dependencies.
+        """
         logger.debug(repr(self))
         if self in lookup:
             lookup[self].add(parent)
@@ -57,6 +62,9 @@ class Requirement(object):
 
 
 class Package(object):
+    """ A Package object refers to a specific version of a package in an
+    archive file.
+    """
 
     def __init__(self, file_name):
         self.name, stuff = file_name.rpartition("-")[0::2]
@@ -73,6 +81,8 @@ class Package(object):
 
     @property
     def requirement(self):
+        """ Convert this package into a requirement specification.
+        """
         return Requirement("{0}=={1}".format(self.name, self.version))
 
 
@@ -96,7 +106,8 @@ class RequirementsList(object):
         
     def resolve(self):
         flat = {}
-        nested = dict((req, req.resolve(flat)) for req in self._reqs)
+        for req in self._reqs:
+            req.resolve(flat)
         out = {}
         for req, package in flat.items():
             out.setdefault(req.name, {})

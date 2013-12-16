@@ -2,3 +2,5 @@ iso8601==0.1.8
 kaiso==0.13.3
 alembic==0.6.0
 SQLAlchemy==0.8.3
+taal==0.4.2
+nameko==1.1.2
