@@ -11,5 +11,7 @@ Installation
 Usage
 -----
 
-$ python -m discord <requirements_file>
+$ python -m discord \<requirements_file\>
 
+If no requirements file is specified, the script will look for a a file called
+`requirements.txt` in the current directory.
