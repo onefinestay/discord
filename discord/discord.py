@@ -4,6 +4,7 @@
 import logging
 import pip
 import re
+from StringIO import StringIO
 import sys
 from tempfile import mkdtemp
 from os import listdir
@@ -73,24 +74,34 @@ class Requirement(object):
     def __hash__(self):
         return hash(self.string)
 
-    def resolve(self, lookup, parent=None):
+    def resolve(self, lookup, parent=None, verbosity=0):
         """ Resolve this requirement and return a Package object along with
         that package's dependencies.
         """
-        sys.stderr.write("Resolving {0}\n".format(self.description))
         if self in lookup:
-            #print "Adding {0} as dependency of {1}".format(self, parent)
             lookup[self].add(parent)
             return None, {}
         else:
-            #print "Adding {0} as dependency of {1} (new)".format(self, parent)
             lookup[self] = set([parent])
+        if verbosity >= 1:
+            sys.stderr.write("Resolving {0}".format(self.description))
         d = mkdtemp()
         try:
+            # pip writes to stdout so capture this and worry about it only
+            # if there's a problem
+            console, sys.stdout = sys.stdout, StringIO()
             status = pip.main(["install", "-q", "-d", d, self.string])
-            if status != 0:
-                sys.stderr.write("!! Pip failed with "
-                                 "status {0}\n".format(status))
+            sys.stdout, captured = console, sys.stdout
+            if status == 0:
+                if verbosity >= 1:
+                    sys.stderr.write(" -> OK\n")
+            else:
+                if verbosity >= 1:
+                    sys.stderr.write(" -> Error {0}\n".format(status))
+                    sys.stderr.write("\x1b[1;31m")
+                    sys.stderr.write(captured.getvalue())
+                    sys.stderr.write("\x1b[0m")
+                #sys.exit()  # exit on error
             package, subpackages = None, {}
             for p in map(Package, listdir(d)):
                 if p.name == self.name or (p.name.startswith(self.name + "-")
@@ -99,10 +110,7 @@ class Requirement(object):
                 else:
                     req = p.requirement
                     subpackages[req] = None
-            #print "Resolving subpackages for {0} - {1}".format(package, subpackages)
-            #if package is None:
-            #    import ipdb; ipdb.set_trace()
-            subpackages = dict((key, key.resolve(lookup, package))
+            subpackages = dict((key, key.resolve(lookup, package, verbosity=verbosity))
                                for key in subpackages.keys())
             return package, subpackages
         finally:
@@ -155,15 +163,16 @@ class RequirementsList(object):
         if line and not line.startswith("#"):
             self._reqs.append(Requirement(line))
         
-    def resolve(self):
+    def resolve(self, verbosity=0):
         flat = {}
         for req in self._reqs:
-            req.resolve(flat)
+            req.resolve(flat, verbosity=verbosity)
         out = {}
         for req, package in flat.items():
             out.setdefault(req.name, {})
             out[req.name][req.version] = package
         return out
     
-    def discord(self):
-        return dict(filter(lambda (k, v): len(v) > 1, self.resolve().items()))
+    def discord(self, verbosity=0):
+        resolved_items = self.resolve(verbosity=verbosity).items()
+        return dict(filter(lambda (k, v): len(v) > 1, resolved_items))
