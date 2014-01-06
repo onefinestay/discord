@@ -7,6 +7,7 @@ Python projects.
 Installation
 ------------
 
+pip install --upgrade git+https://github.com/onefinestay/discord.git
 
 Usage
 -----
