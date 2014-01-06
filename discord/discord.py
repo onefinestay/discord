@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
 import logging
 import pip
 import re
@@ -98,7 +99,7 @@ class Requirement(object):
             else:
                 if verbosity >= 1:
                     sys.stderr.write(" -> Error {0}\n".format(status))
-                    sys.stderr.write("\x1b[1;31m")
+                    sys.stderr.write("\x1b[0;31m")
                     sys.stderr.write(captured.getvalue())
                     sys.stderr.write("\x1b[0m")
                 #sys.exit()  # exit on error
